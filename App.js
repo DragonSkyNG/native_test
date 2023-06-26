@@ -7,11 +7,41 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import * as SecureStore from "expo-secure-store";
+
+async function saveTodos(todos) {
+  await SecureStore.setItemAsync("todos", JSON.stringify(todos));
+}
+
+async function getTodos() {
+  let result = await SecureStore.getItemAsync("todos");
+  return JSON.parse(result) || [];
+}
+
+async function purge() {
+  await SecureStore.deleteItemAsync("todos");
+}
 
 export default function App() {
   const [todo, setTodo] = useState("");
   const [todos, setTodos] = useState([]);
+
+  useEffect(() => {
+    const doShit = async () => {
+      let storedTodos = await getTodos();
+      console.log(storedTodos);
+      setTodos(storedTodos);
+    };
+    doShit();
+  }, []);
+
+  useEffect(() => {
+    const saveShit = async () => {
+      await saveTodos(todos);
+    };
+    saveShit();
+  }, [todos]);
 
   const addTodoHandler = () => {
     setTodos((prevTodos) => [...prevTodos, todo]);
