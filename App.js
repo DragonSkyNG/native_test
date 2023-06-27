@@ -7,70 +7,69 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as SecureStore from "expo-secure-store";
 
-async function saveTodos(todos) {
-  await SecureStore.setItemAsync("todos", JSON.stringify(todos));
+async function saveData(key, data) {
+  await SecureStore.setItemAsync(key, JSON.stringify(data));
 }
 
-async function getTodos() {
-  let result = await SecureStore.getItemAsync("todos");
-  return JSON.parse(result) || [];
+async function getData(key) {
+  let result = await SecureStore.getItemAsync(key);
+  return JSON.parse(result) || false;
 }
 
-async function purge() {
-  await SecureStore.deleteItemAsync("todos");
+async function purge(key) {
+  await SecureStore.deleteItemAsync(key);
 }
 
 export default function App() {
   const [todo, setTodo] = useState("");
   const [todos, setTodos] = useState([]);
+  const unqID = useRef(0);
 
   useEffect(() => {
-    const doShit = async () => {
-      let storedTodos = await getTodos();
+    const getStoredData = async () => {
+      // await purge("todos");
+      // await purge("id");
+      let storedTodos = await getData("todos");
+      let storedID = await getData("id");
+      unqID.current = storedID ? storedID : 0;
+      setTodos(storedTodos ? storedTodos : []);
       console.log(storedTodos);
-      setTodos(storedTodos);
+      console.log(storedID);
     };
-    doShit();
+    getStoredData();
   }, []);
 
   useEffect(() => {
-    const saveShit = async () => {
-      await saveTodos(todos);
+    const saveDataToStore = async () => {
+      await saveData("todos", todos);
+      await saveData("id", unqID.current);
     };
-    saveShit();
+    saveDataToStore();
   }, [todos]);
 
   const addTodoHandler = () => {
-    setTodos((prevTodos) => [...prevTodos, todo]);
+    setTodos((prevTodos) => [...prevTodos, { id: unqID.current, todo: todo }]);
+    unqID.current += 1;
     setTodo("");
+  };
+
+  const deleteTodoHandler = (id) => {
+    setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== id));
+    if (todos.length - 1 === 0) {
+      purge("id");
+      unqID.current = 0;
+    }
   };
 
   return (
     <View style={styles.container}>
-      <View
-        style={{
-          borderBottomColor: "#fff",
-          borderBottomWidth: 1,
-          width: "100%",
-          paddingBottom: 15,
-          alignItems: "center",
-          gap: 10,
-        }}
-      >
+      <View style={styles.header}>
         <Text>Header section</Text>
         <TextInput
-          style={{
-            borderWidth: 1,
-            borderColor: "#55e",
-            borderRadius: 10,
-            paddingLeft: 15,
-            paddingRight: 15,
-            minWidth: 100,
-            textAlign: "center",
-          }}
+          style={styles.input}
           placeholder="To Do"
           onChangeText={setTodo}
           value={todo}
@@ -84,16 +83,18 @@ export default function App() {
       <FlatList
         style={{ gap: 30 }}
         data={todos}
-        renderItem={({ item }) => <Text style={{ fontSize: 20 }}>{item}</Text>}
+        renderItem={({ item }) => (
+          <Text
+            style={{ fontSize: 20 }}
+            onPress={() => {
+              deleteTodoHandler(item.id);
+            }}
+          >
+            {item.todo}
+          </Text>
+        )}
       />
-      <View
-        style={{
-          borderTopColor: "#fff",
-          borderTopWidth: 1,
-          width: "100%",
-          paddingTop: 15,
-        }}
-      >
+      <View style={styles.footer}>
         <Text style={{ textAlign: "center" }}>Footer section</Text>
       </View>
       <StatusBar style="auto" />
@@ -111,5 +112,28 @@ const styles = StyleSheet.create({
   },
   scroll: {
     width: "100%",
+  },
+  header: {
+    borderBottomColor: "#fff",
+    borderBottomWidth: 1,
+    width: "100%",
+    paddingBottom: 15,
+    alignItems: "center",
+    gap: 10,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#55e",
+    borderRadius: 10,
+    paddingLeft: 15,
+    paddingRight: 15,
+    minWidth: 100,
+    textAlign: "center",
+  },
+  footer: {
+    borderTopColor: "#fff",
+    borderTopWidth: 1,
+    width: "100%",
+    paddingTop: 15,
   },
 });
