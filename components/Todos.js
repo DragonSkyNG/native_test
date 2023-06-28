@@ -77,37 +77,33 @@ export default function Todos() {
     <View style={styles.container}>
       <Modal
         animationType="slide"
-        transparent={false}
+        transparent={true}
         visible={modalVisible}
         onRequestClose={() => {
           Alert.alert("Modal has been closed.");
           setModalVisible(false);
         }}
       >
-        <View
-          style={{
-            justifyContent: "center",
-            alignItems: "center",
-            height: "100%",
-          }}
-        >
-          <Text style={{ paddingBottom: 10, fontSize: 20 }}>
-            Do you want to purge all todos?
-          </Text>
-          <View style={{ gap: 10 }}>
-            <Button
-              onPress={() => {
-                purgeAllTodosHandler();
-                setModalVisible(false);
-              }}
-              title="Yes"
-            />
-            <Button
-              onPress={() => {
-                setModalVisible(false);
-              }}
-              title="No"
-            />
+        <View style={styles.modal}>
+          <View style={styles.card}>
+            <Text style={{ paddingBottom: 10, fontSize: 20 }}>
+              Do you want to purge all todos?
+            </Text>
+            <View style={{ flexDirection:"row",gap: 10}}>
+              <Button
+                onPress={() => {
+                  purgeAllTodosHandler();
+                  setModalVisible(false);
+                }}
+                title="Yes"
+              />
+              <Button
+                onPress={() => {
+                  setModalVisible(false);
+                }}
+                title="No"
+              />
+            </View>
           </View>
         </View>
       </Modal>
@@ -155,6 +151,27 @@ export default function Todos() {
 
 const styles = StyleSheet.create({
   container: { flex: 2, width: "100%", alignItems: "center" },
+  modal: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    // height: "100%",
+  },
+  card: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
   inputBox: {
     width: "100%",
     paddingTop: 20,
@@ -169,7 +186,7 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   input: {
-    color:"#333",
+    color: "#333",
     borderWidth: 1,
     borderColor: "#55e",
     borderRadius: 10,
