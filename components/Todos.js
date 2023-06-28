@@ -32,14 +32,10 @@ export default function Todos() {
 
   useEffect(() => {
     const getStoredData = async () => {
-      // await purge("todos");
-      // await purge("id");
       let storedTodos = await getData("todos");
       let storedID = await getData("id");
       unqID.current = storedID ? storedID : 0;
       setTodos(storedTodos ? storedTodos : []);
-      //   console.log(storedTodos);
-      //   console.log(storedID);
     };
     getStoredData();
   }, []);
@@ -155,7 +151,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    // height: "100%",
   },
   card: {
     margin: 20,
@@ -202,7 +197,6 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 10,
     marginBottom: 10,
-    // justifyContent:"center",
     textAlign: "center",
     backgroundColor: "#333",
     borderRadius: 10,

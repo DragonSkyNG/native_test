@@ -20,7 +20,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 35,
     paddingBottom: 25,
-    // backgroundColor: "#888",
     alignItems: "center",
   },
   scroll: {
