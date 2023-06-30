@@ -7,9 +7,11 @@ import {
   View,
   Modal,
   Alert,
+  Pressable,
 } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import * as SecureStore from "expo-secure-store";
+import { FontAwesome } from "@expo/vector-icons";
 
 async function saveData(key, data) {
   await SecureStore.setItemAsync(key, JSON.stringify(data));
@@ -49,7 +51,10 @@ export default function Todos() {
   }, [todos]);
 
   const addTodoHandler = () => {
-    setTodos((prevTodos) => [...prevTodos, { id: unqID.current, todo: todo }]);
+    setTodos((prevTodos) => [
+      ...prevTodos,
+      { id: unqID.current, todo: todo, striked: false },
+    ]);
     unqID.current += 1;
     setTodo("");
   };
@@ -60,6 +65,13 @@ export default function Todos() {
       purge("id");
       unqID.current = 0;
     }
+  };
+
+  checkTodoHandler = (id) => {
+    const todoIndex = todos.findIndex((todo) => todo.id === id);
+    const modifiedArr = [...todos];
+    modifiedArr[todoIndex].striked = !modifiedArr[todoIndex].striked;
+    setTodos(() => [...modifiedArr]);
   };
 
   const purgeAllTodosHandler = async () => {
@@ -85,7 +97,7 @@ export default function Todos() {
             <Text style={{ paddingBottom: 10, fontSize: 20 }}>
               Do you want to purge all todos?
             </Text>
-            <View style={{ flexDirection:"row",gap: 10}}>
+            <View style={{ flexDirection: "row", gap: 10 }}>
               <Button
                 onPress={() => {
                   purgeAllTodosHandler();
@@ -122,14 +134,31 @@ export default function Todos() {
         style={styles.list}
         data={todos}
         renderItem={({ item }) => (
-          <Text
-            style={styles.todo}
-            onPress={() => {
-              deleteTodoHandler(item.id);
-            }}
-          >
-            {item.todo}
-          </Text>
+          <View style={styles.listItem}>
+            <Text
+              style={[styles.todo, item.striked && styles.striked]}
+              onPress={() => {
+                checkTodoHandler(item.id);
+              }}
+            >
+              {item.todo}
+            </Text>
+            <Pressable
+              style={({ pressed }) => [
+                styles.listButton,
+                !item.striked && styles.disabled,
+                { backgroundColor: pressed ? "#4682F9" : "#rgba(0,0,0,0)" },
+              ]}
+              onPress={() => deleteTodoHandler(item.id)}
+              disabled={!item.striked}
+            >
+              <FontAwesome
+                name="trash-o"
+                size={30}
+                color={!item.striked ? "gray" : "black"}
+              />
+            </Pressable>
+          </View>
         )}
       />
       <View style={{ marginBottom: 10 }}>
@@ -191,14 +220,39 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   list: { width: "100%", marginTop: 10, paddingLeft: 10, paddingRight: 10 },
+  listItem: {
+    flexDirection: "row",
+    marginBottom: 10,
+    gap: 10,
+  },
   todo: {
+    flex: 1,
     color: "white",
     fontSize: 20,
     paddingTop: 10,
     paddingBottom: 10,
-    marginBottom: 10,
+    paddingLeft: 10,
+    paddingRight: 10,
     textAlign: "center",
     backgroundColor: "#333",
     borderRadius: 10,
+  },
+  listButton: {
+    flex: 0.2,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderRadius: 10,
+    borderColor: "#4682F9",
+  },
+  disabled: {
+    borderColor: "gray",
+    backgroundColor: "#000",
+    color: "gray",
+  },
+  striked: {
+    textDecorationLine: "line-through",
+    color: "green",
+    textDecorationColor: "red",
   },
 });
