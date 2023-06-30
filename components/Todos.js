@@ -76,12 +76,8 @@ export default function Todos() {
     const modifiedArr = [...todos];
     modifiedArr[todoIndex].striked = !modifiedArr[todoIndex].striked;
     modifiedArr[todoIndex].striked
-      ? setStrikedIDs((prevStriked) => [...prevStriked, id])
-      : setStrikedIDs((prevStriked) => [
-          prevStriked.filter((item) => {
-            item !== id;
-          }),
-        ]);
+      ? setStrikedIDs(() => [...strikedIDs, id])
+      : setStrikedIDs(() => strikedIDs.filter((item) => item !== id));
     setTodos(() => [...modifiedArr]);
   };
 
@@ -95,9 +91,9 @@ export default function Todos() {
         }
         return true;
       });
-      setStrikedIDs([]);
       return filteredTodos;
     });
+    setStrikedIDs([]);
   };
 
   const purgeAllTodosHandler = async () => {
