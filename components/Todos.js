@@ -30,14 +30,17 @@ export default function Todos() {
   const [todo, setTodo] = useState("");
   const [todos, setTodos] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [strikedIDs, setStrikedIDs] = useState([]);
   const unqID = useRef(0);
 
   useEffect(() => {
     const getStoredData = async () => {
       let storedTodos = await getData("todos");
       let storedID = await getData("id");
+      let storedStrikedIDs = await getData("strikedIDs");
       unqID.current = storedID ? storedID : 0;
       setTodos(storedTodos ? storedTodos : []);
+      setStrikedIDs(storedStrikedIDs ? storedStrikedIDs : []);
     };
     getStoredData();
   }, []);
@@ -46,6 +49,7 @@ export default function Todos() {
     const saveDataToStore = async () => {
       await saveData("todos", todos);
       await saveData("id", unqID.current);
+      await saveData("strikedIDs", strikedIDs);
     };
     saveDataToStore();
   }, [todos]);
@@ -71,13 +75,37 @@ export default function Todos() {
     const todoIndex = todos.findIndex((todo) => todo.id === id);
     const modifiedArr = [...todos];
     modifiedArr[todoIndex].striked = !modifiedArr[todoIndex].striked;
+    modifiedArr[todoIndex].striked
+      ? setStrikedIDs((prevStriked) => [...prevStriked, id])
+      : setStrikedIDs((prevStriked) => [
+          prevStriked.filter((item) => {
+            item !== id;
+          }),
+        ]);
     setTodos(() => [...modifiedArr]);
+  };
+
+  const clearStrikedTodosHandler = () => {
+    setTodos((prevTodos) => {
+      const filteredTodos = prevTodos.filter((todo) => {
+        for (id of strikedIDs) {
+          if (todo.id === id) {
+            return false;
+          }
+        }
+        return true;
+      });
+      setStrikedIDs([]);
+      return filteredTodos;
+    });
   };
 
   const purgeAllTodosHandler = async () => {
     await purge("todos");
     await purge("id");
+    await purge("strikedIDs");
     setTodos([]);
+    setStrikedIDs([]);
     unqID.current = 0;
   };
 
@@ -161,13 +189,18 @@ export default function Todos() {
           </View>
         )}
       />
-      <View style={{ marginBottom: 10 }}>
+      <View style={{ flexDirection: "row", gap: 10, marginBottom: 10 }}>
         <Button
           onPress={() => {
             setModalVisible(true);
           }}
           disabled={todos.length === 0}
           title="Purge all todos"
+        />
+        <Button
+          onPress={clearStrikedTodosHandler}
+          disabled={strikedIDs.length === 0}
+          title="Clear all checked todos"
         />
       </View>
     </View>
