@@ -22,7 +22,4 @@ const styles = StyleSheet.create({
     paddingBottom: 25,
     alignItems: "center",
   },
-  scroll: {
-    width: "100%",
-  },
 });
